@@ -1,0 +1,26 @@
+---
+- hosts: webservers_nginx
+  tasks:
+    - name: Install nginx
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+
+    - name: Init nginx
+      service:
+        name: nginx
+        state: started
+
+- hosts: webservers_apache2
+  tasks:
+    - name: Install apache2
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+
+    - name: Init apache2
+      service:
+        name: apache2
+        state: started

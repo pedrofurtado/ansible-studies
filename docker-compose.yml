@@ -1,0 +1,71 @@
+version: '3'
+
+x-hosts-configs:
+  &hosts-configs
+  image: ubuntu:22.04
+  restart: always
+  command:
+    - /bin/bash
+    - -c
+    - |
+      export DEBIAN_FRONTEND=noninteractive
+      export DEBCONF_NONINTERACTIVE_SEEN=true
+
+      echo 'root:verysecurepassword' | chpasswd
+
+      apt-get update -y
+      apt-get install -y ssh
+
+      sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+      sed -i 's/#Port 22/Port 22/' /etc/ssh/sshd_config
+      sed -i 's/#PubkeyAuthentication/PubkeyAuthentication/' /etc/ssh/sshd_config
+      sed -i 's/#PasswordAuthentication/PasswordAuthentication/' /etc/ssh/sshd_config
+
+      systemctl enable ssh
+      service ssh start
+
+      echo "Host $$(hostname) is ready"
+      tail -f /dev/null
+
+services:
+  management_host:
+    image: ubuntu:22.04
+    restart: always
+    hostname: management_host
+    container_name: management_host
+    working_dir: /app
+    volumes:
+      - ./:/app
+    command:
+      - /bin/bash
+      - -c
+      - |
+        export DEBIAN_FRONTEND=noninteractive
+        export DEBCONF_NONINTERACTIVE_SEEN=true
+
+        apt-get update -y
+        apt-get install -y ansible
+
+        echo "Host $$(hostname) is ready"
+        tail -f /dev/null
+
+  host001:
+    <<: *hosts-configs
+    hostname: host001
+    container_name: host001
+    ports:
+      - 3001:80
+
+  host002:
+    <<: *hosts-configs
+    hostname: host002
+    container_name: host002
+    ports:
+      - 3002:80
+
+  host003:
+    <<: *hosts-configs
+    hostname: host003
+    container_name: host003
+    ports:
+      - 3003:80

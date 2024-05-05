@@ -1,0 +1,6 @@
+[webservers_nginx]
+host001
+
+[webservers_apache2]
+host002
+host003
